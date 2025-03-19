@@ -1,60 +1,84 @@
-# live-server-nvim: plugin to run live-server in neovim
+# live-server-bun-nvim: Plugin to Run Live Server in Neovim with Bun.js
 
+A lightweight **Neovim plugin** to serve HTML files using **live-server**, optimized for **Bun.js**.
 
-https://github.com/ngtuonghy/live-server-nvim/assets/116539745/03613e49-fcc7-492a-8c70-040f2f8cb2b1
+---
 
+## 📜 **Requirements**
 
+- [Bun](https://bun.sh/) (instead of npm)
+- `live-server` globally installed via Bun
 
-## Requirements
+```sh
+bun add -g live-server
+```
 
-[npm](https://www.npmjs.com/)
+---
 
-## Installation
+## ⚡ **Installation**
 
-- install the plugin with lazy.nvim as you would for any other:
+Install the plugin using **lazy.nvim**:
 
 ```lua
- require("lazy").setup({
+require("lazy").setup({
   {
-    "ngtuonghy/live-server-nvim",
+    "RoyRoki/live-server-bun-nvim",
     event = "VeryLazy",
     build = ":LiveServerInstall",
-    config = functions()
-    require("live-server-nvim").setup{}
+    config = function()
+      require("live-server-nvim").setup({})
+    end,
   },
 })
 ```
-# Configuration
 
-- live-server-nvim will not run without setup
+---
+
+## 🔧 **Configuration**
+
+**live-server-nvim** requires setup before use:
 
 ```lua
-require('live-server-nvim').setup {
+require("live-server-nvim").setup({
     custom = {
-        "--port=8080",
-        "--no-css-inject",
+        "--port=8080",        -- Set custom port
+        "--no-css-inject",    -- Disable CSS injection
     },
- serverPath = vim.fn.stdpath("data") .. "/live-server/", --default
- open = "folder", -- folder|cwd     --default
-}
-
+    serverPath = vim.fn.stdpath("data") .. "/live-server/", -- Default
+    open = "folder",  -- "folder" | "cwd"
+})
 ```
 
-- Supported customized
-  [see live-server](https://github.com/tapio/live-server#usage-from-command-line)
+More customization options available:  
+[🔗 live-server CLI options](https://github.com/tapio/live-server#usage-from-command-line)
 
-## Usage
+---
+
+## 🚀 **Usage**
+
+| Command             | Description          |
+| ------------------- | -------------------- |
+| `:LiveServerStart`  | Start the server     |
+| `:LiveServerStop`   | Stop the server      |
+| `:LiveServerToggle` | Toggle server on/off |
+
+---
+
+## 🎮 **Custom Keybindings**
+
+Example mapping:
 
 ```lua
-LiveServerStart--Run server
-LiveServerStop --Stop server
-LiveServerToggle --Toggle server
+vim.keymap.set("n", "<leader>lt", function()
+    require("live-server-nvim").toggle()
+end)
 ```
 
-- Custom mappings
+---
 
-```lua
-vim.keymap.set("n", "<leader>lt", function() require("live-server-nvim").toggle() end)
-```
+## 🎉 **Contributing & Thanks**
 
-## Thank you
+Feel free to contribute by opening an issue or PR at:  
+[🔗 GitHub Repo](https://github.com/RoyRoki/live-server-bun-nvim.git)
+
+🚀 **Happy coding!**

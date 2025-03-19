@@ -1,88 +1,69 @@
 local M = {}
+
 local defaultConfig = {
 	custom = {},
 	serverPath = vim.fn.stdpath("data") .. "/live-server/",
 	open = "folder", -- cwd
 }
-local function show_error_message(message)
-	vim.notify(message, vim.log.levels.ERROR, { title = "live-server-nvim" })
-end
 
-local function show_info_message(message)
-	vim.notify(message, vim.log.levels.INFO, { title = "live-server-nvim" })
+local function show_message(level, message)
+	vim.notify(message, level, { title = "live-server-nvim" })
 end
 
 local function getOpen()
-	local open = defaultConfig.open
-	if open == "folder" then
-		return vim.fn.expand("%:p:h")
-	else
-		return vim.fn.getcwd()
-	end
+	return defaultConfig.open == "folder" and vim.fn.expand("%:p:h") or vim.fn.getcwd()
 end
 
-local function generateCommandListFromConfig()
-	local cmdTable = { defaultConfig.serverPath .. "node_modules/.bin/live-server" }
-	for _, option in pairs(defaultConfig.custom) do
-		local cleanedValue = option:gsub("%s", "")
-		table.insert(cmdTable, cleanedValue)
+local function buildCommandList()
+	local cmdTable = { "bunx", "live-server" }
+	for _, option in ipairs(defaultConfig.custom) do
+		table.insert(cmdTable, option:gsub("%s", ""))
 	end
 	return cmdTable
 end
 
-local function removeAnsiEscapeSequences(inputString)
-	local ansiEscapePattern = "\27%[%d;*%d*([mK])"
-	local strippedString = inputString:gsub(ansiEscapePattern, "")
-	return strippedString
-end
-
-local function onStdout(channel_id, data, name)
+local function onStdout(_, data, _)
 	local output = table.concat(data)
-	local strippedOutput = removeAnsiEscapeSequences(output)
-	if string.match(strippedOutput, "http") then
-		show_info_message(strippedOutput)
+	if output:match("http") then
+		show_message(vim.log.levels.INFO, output)
 	end
 end
 
 M.install = function()
-	local serverPath = defaultConfig.serverPath
-	show_info_message("Installing live-server to " .. serverPath)
-	local installCmd = { "npm", "i", "live-server", "--prefix", serverPath }
-	local stringInstallCmd = table.concat(installCmd, " ")
-	vim.fn.jobstart(stringInstallCmd, {
+	show_message(vim.log.levels.INFO, "Installing live-server using Bun...")
+	vim.fn.jobstart({ "bun", "add", "-g", "live-server" }, {
 		on_exit = function(_, code)
 			if code == 0 then
-				show_info_message("live-server has been installed at " .. serverPath)
+				show_message(vim.log.levels.INFO, "live-server installed successfully!")
 			else
-				show_error_message("Failed to install live-server. Try again!")
+				show_message(vim.log.levels.ERROR, "Failed to install live-server. Ensure Bun is installed.")
 			end
 		end,
 	})
 end
 
 M.start = function()
-	local cmdTable = generateCommandListFromConfig()
+	local cmdTable = buildCommandList()
 	local realPath = getOpen()
 	table.insert(cmdTable, realPath)
-	local cmd_string = table.concat(cmdTable, " ")
-	SESSION_JOB = vim.fn.jobstart(cmd_string, { on_stdout = onStdout })
+	SESSION_JOB = vim.fn.jobstart(cmdTable, { on_stdout = onStdout })
 end
 
 M.stop = function()
-	if SESSION_JOB == nil then
-		show_info_message("live-server not running!")
-	else
+	if SESSION_JOB then
 		vim.fn.jobstop(SESSION_JOB)
 		SESSION_JOB = nil
-		show_info_message("Stopped live-server!")
+		show_message(vim.log.levels.INFO, "Stopped live-server!")
+	else
+		show_message(vim.log.levels.WARN, "live-server is not running!")
 	end
 end
 
 M.toggle = function()
-	if SESSION_JOB == nil then
-		M.start()
-	else
+	if SESSION_JOB then
 		M.stop()
+	else
+		M.start()
 	end
 end
 
@@ -93,5 +74,6 @@ end
 vim.cmd("command! LiveServerStart lua require'live-server-nvim'.start()")
 vim.cmd("command! LiveServerStop lua require'live-server-nvim'.stop()")
 vim.cmd("command! LiveServerToggle lua require'live-server-nvim'.toggle()")
-vim.cmd("command! LiveServerInstall  lua require'live-server-nvim'.install()")
+vim.cmd("command! LiveServerInstall lua require'live-server-nvim'.install()")
+
 return M
