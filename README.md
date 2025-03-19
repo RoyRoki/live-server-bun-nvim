@@ -36,7 +36,7 @@ require("lazy").setup({
 
 ## 🔧 **Configuration**
 
-**live-server-nvim** requires setup before use:
+**live-server-nvim** works out of the box but allows customization if needed:
 
 ```lua
 require("live-server-nvim").setup({
@@ -56,23 +56,38 @@ More customization options available:
 
 ## 🚀 **Usage**
 
-| Command             | Description          |
-| ------------------- | -------------------- |
-| `:LiveServerStart`  | Start the server     |
-| `:LiveServerStop`   | Stop the server      |
-| `:LiveServerToggle` | Toggle server on/off |
+| Command              | Description                                 |
+| -------------------- | ------------------------------------------- |
+| `:LiveServerStart`   | Start the server with the correct HTML file |
+| `:LiveServerStop`    | Stop the server                             |
+| `:LiveServerRestart` | Restart the server                          |
+| `:LiveServerOpen`    | Open the served HTML file in the browser    |
 
 ---
 
 ## 🎮 **Custom Keybindings**
 
-Example mapping:
+Example mappings:
 
 ```lua
-vim.keymap.set("n", "<leader>lt", function()
-    require("live-server-nvim").toggle()
-end)
+vim.keymap.set("n", "<leader>ls", ":LiveServerStart<CR>", { noremap = true, silent = true, desc = "Start Live Server" })
+vim.keymap.set("n", "<leader>lx", ":LiveServerStop<CR>", { noremap = true, silent = true, desc = "Stop Live Server" })
+vim.keymap.set("n", "<leader>lr", ":LiveServerRestart<CR>", { noremap = true, silent = true, desc = "Restart Live Server" })
+vim.keymap.set("n", "<leader>lo", ":LiveServerOpen<CR>", { noremap = true, silent = true, desc = "Open Live Server in Browser" })
 ```
+
+---
+
+## 📌 **How it Works**
+
+- **Detects the correct HTML file to serve:**
+  - If you're in an HTML file → serve the current file.
+  - If not, it looks for `index.html` in the project.
+  - If no `index.html`, it serves the first available HTML file.
+  - If no HTML files are found, it shows a warning.
+- **Opens the correct HTML file in your browser.**
+- **Prevents multiple servers from running.**
+- **Improves logging for better debugging.**
 
 ---
 
